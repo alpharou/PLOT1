@@ -7,53 +7,64 @@ function setup() {
 	doOffset = true;
 	
 	//Global variables
-	wO = 0; //widthOffset
-	hO = 0; //heightOffset
-	wS = 1; //widthScale
-	hS = 1; //heightScale
+	dW = 1600;
+	dH = 900;
+	oW = 0; //widthOffset
+	oH = 0; //heightOffset
+	sW = 1; //widthScale
+	sH = 1; //heightScale
+	feedback = 0; //Feedback used in closed loops.
 	
+	plotter = new Plotter(100, 100, dW - 200, dH - 200);
 	doScale();
-	plotter1 = new Plotter();
   
 }
 
 function draw() {
 	
-	//Scale
+	//Apply scale
 	if (stretchScale) {
-		scale(wS, hS);
+		scale(sW, sH);
 	} else {
-		scale(min(wS,hS));
+		scale(min(sW,sH));
 	}
 	
 	background(255);
-	noFill();
-	strokeWeight(2);
-	rect(0 + wO, 0 + hO, 1920, 1080);
-	line(0 + wO, 0 + hO, 1920 + wO, 1080 + hO);
-	rect(40 + wO ,40 + hO, 1840, 1000);
+	
+	//Generator function >> plotter INPuT >> plotter UPDaTe >> plotter DRAW
+	let t = frameCount/60;
+	let dataIn = sin(t) * (sin(0.5*t) - sin(0.33*t));
+	plotter.inpt(dataIn).updt().draw(); 
+	
+	//Snap data in plotter
+	//plotter.updt();
+	
+	//Draw plotter
+	//plotter.draw();
 	
 }
 
 function doScale() {
 
-	//True workspace size is 1920x1080px
-	wS = windowWidth/1920;
-	console.log("wS = " + wS);
-	hS = windowHeight/1080;
-	console.log("hS = " + hS);
+	//True workspace size is dW x dH px
+	sW = windowWidth/dW;
+	//console.log("sW = " + sW);
+	sH = windowHeight/dH;
+	//console.log("sH = " + sH);
 	
 	//Calculate offsets to center the piece on the canvas
 	if (!stretchScale && doOffset) {
-		wO = (windowWidth - 1920*min(wS,hS)) / min(wS,hS); //WTF OFFSET??
-		wO /= 2;
-		console.log("wO = " + wO);
-		hO = (windowHeight - 1080*min(wS,hS)) / min(wS,hS); //EXCUSE WTF??
-		hO /= 2;
-		console.log("hO = " + hO);
+		oW = (windowWidth - dW*min(sW,sH)) / min(sW,sH); //WTF OFFSET??
+		oW /= 2;
+		//console.log("oW = " + oW);
+		oH = (windowHeight - dH*min(sW,sH)) / min(sW,sH); //EXCUSE WTF??
+		oH /= 2;
+		//console.log("oH = " + oH);
 	}
 	
-	return [wS, hS];
+	plotter.setOffset(oW, oH);
+	
+	return;
 
 }
 
