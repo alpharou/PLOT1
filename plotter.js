@@ -9,6 +9,7 @@ class Plotter {
 		this.oW = _oW;
 		this.oH = _oH;
 		this.rgb = [120, 120, 255];
+		this.hardLimit = 100;
 		this.cumulative = false;
 		this.data = [];
 		this.length = 360; //360 datapoints to show, at 60fps is 6secs.
@@ -16,6 +17,12 @@ class Plotter {
 		this.minVal = -1;
 		this.input = 0;
 		this.output = 0;
+		
+	}
+	
+	setHardLimit(hLim) {
+		
+		this.hardLimit = hLim;
 		
 	}
 	
@@ -40,6 +47,27 @@ class Plotter {
 		return this;
 		
 	}
+	
+	click(x, y) {
+		
+		//Avoid any other check if cursor was not pressed inside 
+		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return;}
+		
+		//Accumulate button
+		if (this.x + this.oW + 20 < x && this.y + this.h + this.oH - 50 < y && this.x + this.oW + 20 + 30 > x && this.y + this.h + this.oH - 20 > y) {plotter.accu();}
+		
+		return;
+		
+	}
+	
+	hover(x, y) {
+		
+		//Avoid any other check if cursor was not hovered inside 
+		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return;}
+		
+		return;
+		
+	}
 
 	inpt(datapoint) {
 		
@@ -51,6 +79,21 @@ class Plotter {
 	outData() {
 		
 		return this.input;
+		
+	}
+	
+	rset() {
+		
+		this.hardLimit = 100;
+		this.cumulative = false;
+		this.data = [];
+		this.length = 360; //360 datapoints to show, at 60fps is 6secs.
+		this.maxVal = 1;
+		this.minVal = -1;
+		this.input = 0;
+		this.output = 0;
+		
+		return this;
 		
 	}
 	
@@ -81,8 +124,8 @@ class Plotter {
 		
 		for (let point of this.data) {
 			
-			if (point < this.minVal) {this.minVal = point}
-			if (point > this.maxVal) {this.maxVal = point}
+			if (point < this.minVal && point > -this.hardLimit) {this.minVal = point}
+			if (point > this.maxVal && point < this.hardLimit) {this.maxVal = point}
 			
 		}
 		
@@ -103,7 +146,7 @@ class Plotter {
 		rect(this.x + this.oW + 100, this.y + this.oH + 20, this.w - 120, this.h - 120);
 		
 		//Data line/Points
-		let zeroY = map(0, this.maxVal, this.minVal, this.y + this.oH + 20, this.x + this.oH + this.h - 100);
+		let zeroY = map(0, this.maxVal, this.minVal, this.y + this.oH + 20, this.x + this.oH + this.h - 100, true);
 		let dX = (this.w - 120)/(this.data.length - 1);
 		noStroke();
 		fill(this.rgb[0], this.rgb[1], this.rgb[2]);
@@ -111,7 +154,8 @@ class Plotter {
 		vertex(this.x + this.oW + 100, zeroY);
 		for (let i = 0; i < this.data.length; i++) {
 			
-			let y1 = map(this.data[i], this.maxVal * 1.1, this.minVal * 1.1, this.y + this.oH + 20, this.x + this.oH + this.h - 100);
+			let y1 = map(this.data[i], this.maxVal * 1.1, this.minVal * 1.1, this.y + this.oH + 20, this.y + this.oH + this.h - 100, true);
+			if (y1 == NaN) {y1 = 0;} //Avoid division by zero
 			vertex(this.x + this.oW + 100 + dX * i, y1);
 			
 		}
@@ -122,6 +166,12 @@ class Plotter {
 		stroke(0);
 		strokeWeight(2);
 		line(this.x + this.oW + 100, zeroY, this.x + this.w + this.oW - 20, zeroY);
+		
+		//Accumulate button
+		noStroke();
+		if (this.cumulative) {fill(255, 255, 120);}
+		else {fill(120, 255, 120);}
+		rect(this.x + this.oW + 20, this.y + this.h + this.oH - 50, 30, 30);
 		
 		return this;
 		

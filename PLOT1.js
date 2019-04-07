@@ -32,8 +32,8 @@ function draw() {
 	background(255);
 	
 	//Generator function >> plotter INPuT >> plotter UPDaTe >> plotter DRAW
-	let t = frameCount/60;
-	let dataIn = sin(t) * (sin(0.5*t) - sin(0.33*t));
+	let x = frameCount/60 - 10;
+	let dataIn = sin(x) - sin(2*x) * cos(x/7);
 	plotter.inpt(dataIn).updt().draw(); 
 	
 	//Snap data in plotter
@@ -68,9 +68,19 @@ function doScale() {
 
 }
 
+function mousePressed() {
+	
+	if (this.stretchScale) {plotter.click(mouseX/sW, mouseY/sH);}
+	else {plotter.click(mouseX/min(sW,sH), mouseY/min(sW,sH));}
+	return;
+	
+}
+
 function mouseMoved() {
 	
-	
+	if (this.stretchScale) {plotter.hover(mouseX/sW, mouseY/sH);}
+	else {plotter.hover(mouseX/min(sW,sH), mouseY/min(sW,sH));}
+	return;
 	
 }
 
