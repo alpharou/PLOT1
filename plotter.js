@@ -9,14 +9,15 @@ class Plotter {
 		this.oW = _oW;
 		this.oH = _oH;
 		this.rgb = [120, 120, 255];
-		this.hardLimit = 100;
+		this.hardLimit = 1000; //Limit on the Y axis
+		this.hardTime = 3600; //60secs * 60 frames in 1 sec * X min //Limit on the X axis
+		this.autoScale = false;
 		this.cumulative = false;
 		this.data = [];
 		this.length = 360; //360 datapoints to show, at 60fps is 6secs.
 		this.maxVal = 1;
 		this.minVal = -1;
-		this.input = 0;
-		this.output = 0;
+		this.workData = 0;
 		
 	}
 	
@@ -29,6 +30,13 @@ class Plotter {
 	accu() {
 		
 		this.cumulative ^= true;
+		return this;
+		
+	}
+	
+	autoScl() {
+		
+		this.autoScale ^= true;
 		return this;
 		
 	}
@@ -50,11 +58,14 @@ class Plotter {
 	
 	click(x, y) {
 		
-		//Avoid any other check if cursor was not pressed inside 
+		//Avoid any other check if cursor was not pressed inside plotter
 		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return;}
 		
 		//Accumulate button
-		if (this.x + this.oW + 20 < x && this.y + this.h + this.oH - 50 < y && this.x + this.oW + 20 + 30 > x && this.y + this.h + this.oH - 20 > y) {plotter.accu();}
+		if (this.x + this.oW + 15 < x && this.y + this.h + this.oH - 45 < y && this.x + this.oW + 45 > x && this.y + this.h + this.oH - 15 > y) {plotter.accu();}
+		
+		//AutoScale button
+		if (this.x + this.oW + 60 < x && this.y + this.h + this.oH - 90 < y && this.x + this.oW + 90 > x && this.y + this.h + this.oH - 60 > y) {plotter.autoScl();}
 		
 		return;
 		
@@ -71,14 +82,14 @@ class Plotter {
 
 	inpt(datapoint) {
 		
-		this.input = datapoint;
+		this.workData = datapoint;
 		return this;
 		
 	}
 	
-	outData() {
+	output() {
 		
-		return this.input;
+		return this.workData;
 		
 	}
 	
@@ -97,37 +108,55 @@ class Plotter {
 		
 	}
 	
+	snap() {
+		
+		this.data.push(this.workData);
+		
+		if (this.data.length > this.hardTime) {this.data.splice(0, this.data.length - this.hardTime);}
+		
+	}
+	
 	updt() {
 		
-		this.data.push(this.input);
-		
-		//Slowly prune data until desirable length is reached
-		//This causes a sliding effect to the left
+		//Prune data until desirable length is reached
 		if (!this.cumulative) {
 			
-			if (this.data.length >= this.length) {
-			
-				this.data.splice(0, 1);
-			
-			}
+			let deltaTime = abs(this.length - this.data.length);
 			
 			if (this.data.length >= this.length) {
 			
-				this.data.splice(0, 1);
+				this.data.splice(0, ceil(deltaTime * 0.1));
 			
 			}
 			
 		}
 		
-		this.minVal = -1;
-		this.maxVal = 1;
+		//Calculate the desired Y axis scale
+		let desiredMax = 1;
+		let desiredMin = -1;
 		
-		for (let point of this.data) {
+		if (this.autoScale) {
 			
-			if (point < this.minVal && point > -this.hardLimit) {this.minVal = point}
-			if (point > this.maxVal && point < this.hardLimit) {this.maxVal = point}
+			for (let point of this.data) {
+			
+				if (point * 1.1 < desiredMin && point > -this.hardLimit) {desiredMin = point * 1.1;}
+				if (point * 1.1 > desiredMax && point < this.hardLimit) {desiredMax = point * 1.1;}
+			
+			}
+			
+		} else {
+			
+			desiredMax = 5;
+			desiredMin = -5;
 			
 		}
+		
+		//Slowly bring it up or down.
+		let deltaMax = desiredMax - this.maxVal;
+		let deltaMin = desiredMin - this.minVal;
+		let factor = 0.2;
+		this.maxVal += deltaMax * factor;	
+		this.minVal += deltaMin * factor;
 		
 		return this;
 		
@@ -143,23 +172,23 @@ class Plotter {
 		//Display region
 		noStroke();
 		fill(255);
-		rect(this.x + this.oW + 100, this.y + this.oH + 20, this.w - 120, this.h - 120);
+		rect(this.x + this.oW + 105, this.y + this.oH + 20, this.w - 125, this.h - 125);
 		
 		//Data line/Points
 		let zeroY = map(0, this.maxVal, this.minVal, this.y + this.oH + 20, this.x + this.oH + this.h - 100, true);
-		let dX = (this.w - 120)/(this.data.length - 1);
+		let dX = (this.w - 125)/(/*this.data.length*/ max(this.length, this.data.length) - 1);
 		noStroke();
 		fill(this.rgb[0], this.rgb[1], this.rgb[2]);
 		beginShape();
-		vertex(this.x + this.oW + 100, zeroY);
+		vertex(this.x + this.oW + 105, zeroY);
 		for (let i = 0; i < this.data.length; i++) {
 			
-			let y1 = map(this.data[i], this.maxVal * 1.1, this.minVal * 1.1, this.y + this.oH + 20, this.y + this.oH + this.h - 100, true);
+			let y1 = map(this.data[i], this.maxVal * 1.0, this.minVal * 1.0, this.y + this.oH + 20, this.y + this.oH + this.h - 105, true);
 			if (y1 == NaN) {y1 = 0;} //Avoid division by zero
-			vertex(this.x + this.oW + 100 + dX * i, y1);
+			vertex(this.x + this.oW + 105 + dX * i, y1);
 			
 		}
-		vertex(this.x + this.oW + 100 + dX * (this.data.length - 1), zeroY);
+		vertex(this.x + this.oW + 105 + dX * (this.data.length - 1), zeroY);
 		endShape(CLOSE);
 		
 		//Zero line
@@ -168,10 +197,45 @@ class Plotter {
 		line(this.x + this.oW + 100, zeroY, this.x + this.w + this.oW - 20, zeroY);
 		
 		//Accumulate button
-		noStroke();
+		stroke(0);
 		if (this.cumulative) {fill(255, 255, 120);}
 		else {fill(120, 255, 120);}
-		rect(this.x + this.oW + 20, this.y + this.h + this.oH - 50, 30, 30);
+		//rect(this.x + this.oW + 15, this.y + this.h + this.oH - 45, 30, 30);
+		beginShape();
+		vertex(this.x + this.oW + 59, this.y + this.h + this.oH - 59);
+		vertex(this.x + this.oW + 104, this.y + this.oH + this.h - 59);
+		vertex(this.x + this.oW + 104, this.y + this.oH + this.h - 104);
+		endShape(CLOSE);
+		
+		//AutoScale button
+		stroke(0);
+		if (this.autoScale) {fill(255, 255, 120);}
+		else {fill(120, 255, 120);}
+		//rect(this.x + this.oW + 60, this.y + this.h + this.oH - 90, 30, 30);
+		beginShape();
+		vertex(this.x + this.oW + 59, this.y + this.h + this.oH - 59);
+		vertex(this.x + this.oW + 104, this.y + this.oH + this.h - 104);
+		vertex(this.x + this.oW + 59, this.y + this.oH + this.h - 104);
+		endShape(CLOSE);
+		
+		//TEST BUTTONS
+		fill(200,200,200);
+		rect(this.x + this.oW + 15, this.y + this.h + this.oH - 90, 30, 30);
+		rect(this.x + this.oW + 60, this.y + this.h + this.oH - 45, 30, 30);
+		
+		//Scale ruler Y
+		//TODO: 
+		fill(255);
+		strokeWeight(2);
+		stroke(0);
+		rect(this.x + this.oW + 59, this.y + this.oH + 19, 45, this.h - 123);
+		
+		//Scale ruler Time
+		//TODO:
+		fill(255);
+		strokeWeight(2);
+		stroke(0);
+		rect(this.x + this.oW + 104, this.y + this.oH + this.h - 104, this.w - 123, 45);
 		
 		return this;
 		

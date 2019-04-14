@@ -33,14 +33,20 @@ function draw() {
 	
 	//Generator function >> plotter INPuT >> plotter UPDaTe >> plotter DRAW
 	let x = frameCount/60 - 10;
-	let dataIn = sin(x) - sin(2*x) * cos(x/7);
-	plotter.inpt(dataIn).updt().draw(); 
+	
+	let dataIn = sin(x) - sin(2*x) * cos(x/7); //EXAMPLE 1
+	//let dataIn = 10; 
+	//let dataIn = sin(x);
+	plotter.inpt(dataIn);
 	
 	//Snap data in plotter
-	//plotter.updt();
+	if (true /*x < 10*/) {plotter.snap()};
 	
-	//Draw plotter
-	//plotter.draw();
+	//Update plotter
+	plotter.updt();
+	
+	//Draw plotter - MUST ALWAYS HAPPEN
+	plotter.draw();
 	
 }
 
