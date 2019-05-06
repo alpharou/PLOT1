@@ -13,6 +13,7 @@ function setup() {
 	oH = 0; //heightOffset
 	sW = 1; //widthScale
 	sH = 1; //heightScale
+	
 	feedback = 0; //Feedback used in closed loops.
 	
 	plotter = new Plotter(100, 100, dW - 200, dH - 200);

@@ -11,8 +11,8 @@ class Plotter {
 		this.rgb = [120, 120, 255];
 		this.hardLimit = 1000; //Limit on the Y axis
 		this.hardTime = 3600; //60secs * 60 frames in 1 sec * X min //Limit on the X axis
-		this.autoScale = false;
-		this.cumulative = false;
+		this.autoScale = true;
+		this.cumulative = true;
 		this.data = [];
 		this.length = 360; //360 datapoints to show, at 60fps is 6secs.
 		this.maxVal = 1;
@@ -24,6 +24,12 @@ class Plotter {
 	setHardLimit(hLim) {
 		
 		this.hardLimit = hLim;
+		
+	}
+	
+	setLength(lngth) {
+		
+		this.length = lngth;
 		
 	}
 	
@@ -62,10 +68,10 @@ class Plotter {
 		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return;}
 		
 		//Accumulate button
-		if (this.x + this.oW + 15 < x && this.y + this.h + this.oH - 45 < y && this.x + this.oW + 45 > x && this.y + this.h + this.oH - 15 > y) {plotter.accu();}
+		if (x > this.x + this.oW + 60 && y > this.y + this.h + this.oH - 105 && x < this.x + this.oW + 105 && y < this.y + this.h + this.oH - 60 && x - this.x - this.oW - 60 > - y + this.y + this.oH + this.h - 60) {plotter.accu();}
 		
 		//AutoScale button
-		if (this.x + this.oW + 60 < x && this.y + this.h + this.oH - 90 < y && this.x + this.oW + 90 > x && this.y + this.h + this.oH - 60 > y) {plotter.autoScl();}
+		if (x > this.x + this.oW + 60 && y > this.y + this.h + this.oH - 105 && x < this.x + this.oW + 105 && y < this.y + this.h + this.oH - 60 && x - this.x - this.oW - 60 <= - y + this.y + this.oH + this.h - 60) {plotter.autoScl();}
 		
 		return;
 		
@@ -118,10 +124,12 @@ class Plotter {
 	
 	updt() {
 		
+		//TODO: Add a proper responsive scale to the time axis just like the Y axis so that it doesnt snap into place, but slide accordingly.
+		
 		//Prune data until desirable length is reached
 		if (!this.cumulative) {
 			
-			let deltaTime = abs(this.length - this.data.length);
+			let deltaTime = abs(this.data.length - this.length);
 			
 			if (this.data.length >= this.length) {
 			
@@ -198,7 +206,7 @@ class Plotter {
 		
 		//Accumulate button
 		stroke(0);
-		if (this.cumulative) {fill(255, 255, 120);}
+		if (!this.cumulative) {fill(255, 255, 120);}
 		else {fill(120, 255, 120);}
 		//rect(this.x + this.oW + 15, this.y + this.h + this.oH - 45, 30, 30);
 		beginShape();
@@ -209,7 +217,7 @@ class Plotter {
 		
 		//AutoScale button
 		stroke(0);
-		if (this.autoScale) {fill(255, 255, 120);}
+		if (!this.autoScale) {fill(255, 255, 120);}
 		else {fill(120, 255, 120);}
 		//rect(this.x + this.oW + 60, this.y + this.h + this.oH - 90, 30, 30);
 		beginShape();
