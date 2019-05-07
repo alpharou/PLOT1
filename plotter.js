@@ -17,6 +17,8 @@ class Plotter {
 		this.length = 360; //360 datapoints to show, at 60fps is 6secs.
 		this.maxVal = 1;
 		this.minVal = -1;
+		this.desiredMax = 1;
+		this.desiredMin = -1;
 		this.workData = 0;
 		
 	}
@@ -65,24 +67,33 @@ class Plotter {
 	click(x, y) {
 		
 		//Avoid any other check if cursor was not pressed inside plotter
-		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return;}
+		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return false;}
 		
 		//Accumulate button
-		if (x > this.x + this.oW + 60 && y > this.y + this.h + this.oH - 105 && x < this.x + this.oW + 105 && y < this.y + this.h + this.oH - 60 && x - this.x - this.oW - 60 > - y + this.y + this.oH + this.h - 60) {plotter.accu();}
+		if (x > this.x + this.oW + 60 && y > this.y + this.h + this.oH - 105 && x < this.x + this.oW + 105 && y < this.y + this.h + this.oH - 60 && x - this.x - this.oW - 60 > - y + this.y + this.oH + this.h - 60) {plotter.accu(); return true;}
 		
 		//AutoScale button
-		if (x > this.x + this.oW + 60 && y > this.y + this.h + this.oH - 105 && x < this.x + this.oW + 105 && y < this.y + this.h + this.oH - 60 && x - this.x - this.oW - 60 <= - y + this.y + this.oH + this.h - 60) {plotter.autoScl();}
+		if (x > this.x + this.oW + 60 && y > this.y + this.h + this.oH - 105 && x < this.x + this.oW + 105 && y < this.y + this.h + this.oH - 60 && x - this.x - this.oW - 60 <= - y + this.y + this.oH + this.h - 60) {plotter.autoScl(); return true;}
 		
-		return;
+		return false;
 		
 	}
 	
 	hover(x, y) {
 		
 		//Avoid any other check if cursor was not hovered inside 
-		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return;}
+		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return false;}
 		
-		return;
+		return false;
+		
+	}
+	
+	scrll(x, y, dScrll) {
+		
+		//Avoid any other check if cursor was not scrolled inside enabled zones
+		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return false;}
+		
+		return false;
 		
 	}
 
@@ -140,30 +151,23 @@ class Plotter {
 		}
 		
 		//Calculate the desired Y axis scale
-		let desiredMax = 1;
-		let desiredMin = -1;
 		
 		if (this.autoScale) {
 			
 			for (let point of this.data) {
 			
-				if (point * 1.1 < desiredMin && point > -this.hardLimit) {desiredMin = point * 1.1;}
-				if (point * 1.1 > desiredMax && point < this.hardLimit) {desiredMax = point * 1.1;}
+				if (point * 1.1 < this.desiredMin && point > -this.hardLimit) {this.desiredMin = point * 1.1;}
+				if (point * 1.1 > this.desiredMax && point < this.hardLimit) {this.desiredMax = point * 1.1;}
 			
 			}
-			
-		} else {
-			
-			desiredMax = 5;
-			desiredMin = -5;
 			
 		}
 		
 		//Slowly bring it up or down.
-		let deltaMax = desiredMax - this.maxVal;
-		let deltaMin = desiredMin - this.minVal;
+		let deltaMax = this.desiredMax - this.maxVal;
+		let deltaMin = this.desiredMin - this.minVal;
 		let factor = 0.2;
-		this.maxVal += deltaMax * factor;	
+		this.maxVal += deltaMax * factor;
 		this.minVal += deltaMin * factor;
 		
 		return this;
