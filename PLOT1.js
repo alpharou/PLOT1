@@ -35,7 +35,7 @@ function draw() {
 	//Generator function >> plotter INPuT >> plotter UPDaTe >> plotter DRAW
 	let x = frameCount/60 - 10;
 	
-	let dataIn = sin(x) - sin(2*x) * cos(x/7); //EXAMPLE 1
+	let dataIn = sin(x) - sin(2*x) * cos(x/7) + (x % 3) % 2; //EXAMPLE 1
 	//let dataIn = 10; 
 	//let dataIn = sin(x);
 	plotter.inpt(dataIn);
