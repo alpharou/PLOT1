@@ -8,18 +8,28 @@ class Plotter {
 		this.h = h;
 		this.oW = _oW;
 		this.oH = _oH;
+		
 		this.rgb = [120, 120, 255];
-		this.hardLimit = 1000; //Limit on the Y axis
-		this.hardTime = 3600; //60secs * 60 frames in 1 sec * X min //Limit on the X axis
-		this.autoScale = true;
-		this.cumulative = true;
+		
+		this.workData = 0;
 		this.data = [];
+		
+		this.autoScale = true; //Scale the Y axis to fit perfectly
+		this.cumulative = true; //Scale the X axis to fit every value in data
+		
+		//Hard Limits for axis
+		this.hardLimit = 10000; //Limit on the Y axis
+		this.hardTime = 3600; //60secs * 60 frames in 1 sec * X min //Limit on the X axis
+		
+		//Values for axis scale
 		this.length = 360; //360 datapoints to show, at 60fps is 6secs.
-		this.maxVal = 1;
-		this.minVal = -1;
+		this.maxVal = 1; //Top value
+		this.minVal = -1; //Bottom value for autoscale
+		
+		//Desired/Manual values for axis
 		this.desiredMax = 1;
 		this.desiredMin = -1;
-		this.workData = 0;
+		this.desiredTime = 360;
 		
 	}
 	
@@ -31,7 +41,7 @@ class Plotter {
 	
 	setLength(lngth) {
 		
-		this.length = lngth;
+		this.desiredLength = lngth;
 		
 	}
 	
@@ -93,6 +103,8 @@ class Plotter {
 		//Avoid any other check if cursor was not scrolled inside enabled zones
 		if (this.x + this.oW > x || this.y + this.oH > y || this.x + this.w + this.oW < x || this.y + this.h + this.oH < y) {return false;}
 		
+		if (x > this.x + this.oW + 105 && x < this.x + this.oW + this.w - 20 && y > this.y + this.oH + this.h - 105 && y < this.y + this.oH + this.h - 45) {this.desired}
+		
 		return false;
 		
 	}
@@ -112,14 +124,13 @@ class Plotter {
 	
 	rset() {
 		
-		this.hardLimit = 100;
+		this.hardLimit = 1000;
 		this.cumulative = false;
 		this.data = [];
 		this.length = 360; //360 datapoints to show, at 60fps is 6secs.
 		this.maxVal = 1;
 		this.minVal = -1;
-		this.input = 0;
-		this.output = 0;
+		this.workData = 0;
 		
 		return this;
 		
