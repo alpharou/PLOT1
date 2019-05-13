@@ -165,10 +165,13 @@ class Plotter {
 		
 		if (this.autoScale) {
 			
+			this.desiredMax = 1;
+			this.desiredMin = -1;
+			
 			for (let point of this.data) {
 			
-				if (point * 1.1 < this.desiredMin && point > -this.hardLimit) {this.desiredMin = point * 1.1;}
 				if (point * 1.1 > this.desiredMax && point < this.hardLimit) {this.desiredMax = point * 1.1;}
+				if (point * 1.1 < this.desiredMin && point > -this.hardLimit) {this.desiredMin = point * 1.1;}
 			
 			}
 			
@@ -247,11 +250,13 @@ class Plotter {
 		rect(this.x + this.oW + 60, this.y + this.h + this.oH - 45, 30, 30);
 		
 		//Scale ruler Y
-		//TODO: 
+		//TODO:
 		fill(255);
 		strokeWeight(2);
 		stroke(0);
 		rect(this.x + this.oW + 59, this.y + this.oH + 19, 45, this.h - 123);
+		
+		//Determine steps to draw
 		
 		//Scale ruler Time
 		//TODO:
