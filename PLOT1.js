@@ -34,11 +34,17 @@ function draw() {
 	
 	//Generator function >> plotter INPuT >> plotter UPDaTe >> plotter DRAW
 	let x = frameCount/60;
+
+	let wave = sin(x) - sin(2*x) * cos(x/7); //EXAMPLE 1
+	//let wave = "sin(x) - sin(2*x) * cos(x/7);"
+	//let wave = 10; 
+	//let wave = sin(x);
+	//let wave = "abs(x % 4 - 2) + sin(x) - sin(2*x) * cos(x/7)";
 	
-	let dataIn = abs(x % 4 - 2) + sin(x) - sin(2*x) * cos(x/7);
-	//let dataIn = sin(x) - sin(2*x) * cos(x/7); //EXAMPLE 1
-	//let dataIn = 10; 
-	//let dataIn = sin(x);
+	wave = Function("x", "return " + wave + ";"); //Evaluate wave
+
+	let dataIn = wave(x);
+	
 	plotter.inpt(dataIn);
 	
 	//Snap data in plotter
