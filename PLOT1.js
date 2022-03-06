@@ -35,7 +35,8 @@ function draw() {
 	//Generator function >> plotter INPuT >> plotter UPDaTe >> plotter DRAW
 	let x = frameCount/60;
 
-	let wave = sin(x) - sin(2*x) * cos(x/7); //EXAMPLE 1
+	let wave = "sin(PI*x)/(PI*x)";
+	//let wave = sin(x) - sin(2*x) * cos(x/7); //EXAMPLE 1
 	//let wave = "sin(x) - sin(2*x) * cos(x/7);"
 	//let wave = 10; 
 	//let wave = sin(x);
